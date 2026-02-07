@@ -10,5 +10,5 @@ __pycache__/
 *.pt
 
 # Ignore Sensitive Keys (VERY IMPORTANT)
-secrets.py
+app_secrets.py
 .env

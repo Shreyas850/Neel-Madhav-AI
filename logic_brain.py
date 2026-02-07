@@ -1,6 +1,6 @@
 import brain_loader
 import pywhatkit
-import secrets
+import app_secrets as secrets
 from elevenlabs.client import ElevenLabs
 import pyaudio
 import pyttsx3
