@@ -1,38 +1,31 @@
 import speech_recognition as sr
 import whisper
 import torch
+import numpy as np
 import os
-import threading
 
 # --- CONFIGURATION ---
-# Options: "tiny", "base", "small", "medium", "large"
-# "base" is the sweet spot for speed vs accuracy on GPU.
 MODEL_SIZE = "base"
-ENERGY_THRESHOLD = 300  # Adjust for background noise (300-400 is good)
-PAUSE_THRESHOLD = 0.8   # Time to wait before considering command "finished"
+ENERGY_THRESHOLD = 500  # Adjusted for sensitivity
+PAUSE_THRESHOLD = 0.6   # Adjusted for speed
 
 print(f"\n🎧 Loading Whisper Model ({MODEL_SIZE}) to GPU...")
 
 try:
     # Force usage of NVIDIA GPU (cuda)
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    # Load model to GPU
     audio_model = whisper.load_model(MODEL_SIZE, device=device)
     print(f"✅ Whisper Ears Active on {device.upper()}.")
 except Exception as e:
     print(f"❌ Error loading Whisper: {e}")
-    print("⚠️ Falling back to CPU (slower)...")
+    device = "cpu"
     audio_model = whisper.load_model(MODEL_SIZE, device="cpu")
 
 def listen_loop(callback_function):
-    """
-    Continuous listening loop using SpeechRecognition for VAD 
-    and OpenAI Whisper for transcription.
-    """
     recognizer = sr.Recognizer()
     recognizer.energy_threshold = ENERGY_THRESHOLD
     recognizer.pause_threshold = PAUSE_THRESHOLD
-    
-    # Dynamic noise adjustment
     recognizer.dynamic_energy_threshold = True 
 
     microphone = sr.Microphone()
@@ -46,26 +39,27 @@ def listen_loop(callback_function):
         try:
             with microphone as source:
                 print("👂 Listening...")
-                # Listen until silence is detected
                 audio = recognizer.listen(source, timeout=None, phrase_time_limit=10)
                 
                 print("🧠 Transcribing...")
                 
-                # 1. Save temporary wav file (Whisper likes files)
-                with open("temp_command.wav", "wb") as f:
-                    f.write(audio.get_wav_data())
+                # --- 🚀 RAM-ONLY PROCESSING (No Files) ---
+                # 1. Get raw PCM audio data resampled to 16000Hz (Whisper's native rate)
+                raw_data = audio.get_raw_data(convert_rate=16000, convert_width=2)
+                
+                # 2. Convert raw bytes to Float32 NumPy array
+                # (Divide by 32768.0 to normalize between -1.0 and 1.0)
+                audio_np = np.frombuffer(raw_data, dtype=np.int16).astype(np.float32) / 32768.0
 
-                # 2. Transcribe using Local GPU Model
-                # fp16=False fixes some CPU/older GPU errors
+                # 3. Transcribe directly from RAM
                 result = audio_model.transcribe(
-                    "temp_command.wav", 
+                    audio_np, 
                     fp16=torch.cuda.is_available(),
-                    language='en' # You can remove this to auto-detect Hindi/English
+                    language='en' # Optional: Remove if you want auto-detection
                 )
                 
                 text = result['text'].strip()
 
-                # 3. Cleanup & Callback
                 if text:
                     print(f"🗣️ User said: {text}")
                     callback_function(text)
