@@ -11,3 +11,4 @@ __pycache__/
 
 # Ignore Sensitive Keys (VERY IMPORTANT)
 secrets.py
+.env
