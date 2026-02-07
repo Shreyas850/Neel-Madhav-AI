@@ -27,32 +27,28 @@ class NeelMadhavGUI:
 
         print("🎨 [2/5] Initializing GUI elements...")
 
-        # --- USE CANVAS FOR TRANSPARENCY (Fixes Black Boxes) ---
+        # --- USE CANVAS FOR TRANSPARENCY ---
         self.canvas = tk.Canvas(root, width=500, height=750, highlightthickness=0, bg='black')
         self.canvas.pack(fill="both", expand=True)
 
-        # 1. Draw Background Image
+        # 1. Background
         self.bg_image = self.load_image(KRISHNA_PATH, (500, 750))
         if self.bg_image:
             self.canvas.create_image(0, 0, image=self.bg_image, anchor="nw")
         else:
             self.canvas.create_text(250, 375, text="Image Not Found", fill="white")
 
-        # 2. Draw Status Text (Above Orb, No Box)
-        # Position: x=250 (Center), y=580 (Above Orb)
+        # 2. Status Text (Above Orb)
         self.status_text_id = self.canvas.create_text(
             250, 580, 
-            text="Initializing Brain...", 
-            font=("Helvetica", 14, "bold"), # Sans-Serif Font
+            text="Starting System...", 
+            font=("Helvetica", 14, "bold"), 
             fill="cyan"
         )
 
-        # 3. Draw Orb (Bottom Center)
-        # Position: x=250 (Center), y=680 (Bottom)
+        # 3. Orb (Bottom Center)
         self.orb_frames = self.load_gif(ORB_PATH, (150, 149))
         self.current_frame_idx = 0
-        
-        # Placeholder for orb on canvas
         self.orb_image_id = self.canvas.create_image(250, 680, anchor="center")
         
         if self.orb_frames:
@@ -75,9 +71,8 @@ class NeelMadhavGUI:
         frames = []
         try:
             gif = Image.open(path)
-            # Iterator allows reading all frames of GIF
             for frame in ImageSequence.Iterator(gif):
-                frame = frame.convert("RGBA") # Use RGBA for transparency
+                frame = frame.convert("RGBA")
                 frame = frame.resize(size, Image.Resampling.LANCZOS)
                 frames.append(ImageTk.PhotoImage(frame))
             return frames
@@ -87,16 +82,12 @@ class NeelMadhavGUI:
 
     def animate_orb(self):
         if not self.orb_frames: return
-        
-        # Update the image item on the canvas
         frame = self.orb_frames[self.current_frame_idx]
         self.canvas.itemconfig(self.orb_image_id, image=frame)
-        
         self.current_frame_idx = (self.current_frame_idx + 1) % len(self.orb_frames)
         self.root.after(33, self.animate_orb)
 
     def update_status(self, text, color):
-        # Update the text item on the canvas
         self.canvas.itemconfig(self.status_text_id, text=text, fill=color)
 
     # --- BACKEND HANDLING ---
@@ -107,13 +98,20 @@ class NeelMadhavGUI:
     def load_and_run_ai(self):
         global logic_brain, voice_core
         try:
-            print("🧠 [4/5] Importing AI Modules...")
+            # STEP 1: LOAD BRAIN (Llama)
+            self.root.after(0, lambda: self.update_status("Loading Brain (Phi-3)...", "yellow"))
+            print("🧠 [4/5] Loading Logic Brain...")
             import logic_brain
+            
+            # STEP 2: LOAD EARS (Whisper)
+            self.root.after(0, lambda: self.update_status("Loading Ears (Whisper)...", "orange"))
+            print("👂 [4.5/5] Loading Voice Core...")
             import voice_core
-            print("✅ [5/5] AI Modules Loaded!")
+            
+            print("✅ [5/5] All Modules Loaded!")
 
-            # Update Text to "Listening"
-            self.root.after(0, lambda: self.update_status("Listening...", "#FFFFFF")) # White
+            # STEP 3: READY
+            self.root.after(0, lambda: self.update_status("Listening...", "#00FF00"))
             
             logic_brain.speak_stream("Radhey Radhey")
             voice_core.listen_loop(self.main_execution)
@@ -125,19 +123,15 @@ class NeelMadhavGUI:
     def main_execution(self, text):
         if not text: return
         
-        # Update UI to Thinking
         self.root.after(0, lambda: self.update_status("Thinking...", "cyan"))
         
-        # Logic
         response = logic_brain.think(text)
         
-        # Speak
         if response:
             print(f"🤖 Reply: {response}")
             logic_brain.speak_stream(response)
         
-        # Reset UI
-        self.root.after(0, lambda: self.update_status("Listening...", "#FFFFFF"))
+        self.root.after(0, lambda: self.update_status("Listening...", "#00FF00"))
 
 
 if __name__ == "__main__":

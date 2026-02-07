@@ -64,7 +64,9 @@ def listen_loop(callback_function):
                     print(f"🗣️ User said: {text}")
                     callback_function(text)
                 else:
-                    print("Example: (Silence)")
+                    # Silence the "Ghost" logs to keep console clean
+                    # print("Example: (Silence)") 
+                    pass
 
         except sr.WaitTimeoutError:
             pass
