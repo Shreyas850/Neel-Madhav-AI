@@ -1,6 +1,6 @@
 import brain_loader
 import pywhatkit
-import app_secrets as secrets
+import app_secrets as secrets  # ✅ Renamed from secrets.py
 from elevenlabs.client import ElevenLabs
 import pyaudio
 import pyttsx3
@@ -54,11 +54,11 @@ def get_gita_specific(text):
             hindi_meaning = data.get('tej', {}).get('ht', 'अर्थ उपलब्ध नहीं है।')
             return f"अध्याय {ch}, श्लोक {sl}: {sanskrit} ... अर्थ: {hindi_meaning}"
         else:
-            # ✅ NEW: Specific error for missing verses
+            # ✅ Specific error for missing verses
             return f"Kshama karein Sakha, Adhyay {ch} mein Shlok {sl} nahi hai."
 
     except Exception as e:
-        print(f"Gita API Error: {e}") # Print real error to terminal for debugging
+        print(f"Gita API Error: {e}") 
         pass
     
     return "Internet connection error, Sakha."
@@ -83,7 +83,17 @@ def get_system_info(text):
 
 # --- 🤔 THE MAIN BRAIN ---
 def think(text):
-    text = text.lower()
+    text = text.lower().strip()
+    
+    # 🚫 IGNORE HALLUCINATIONS (The "Ghost" Filter)
+    # If text is empty, too short, or contains Japanese/Chinese characters
+    if not text or len(text) < 2: 
+        return None 
+    if any("\u4e00" <= char <= "\u9fff" for char in text): 
+        print("⚠️ Ignoring Whisper Hallucination (Japanese/Chinese text)")
+        return None
+    if text in ["you", "the", "thank you", "bye", "ok"]: 
+        return None
 
     # =================================================================
     # 🚨 PRIORITY 1: SYSTEM & OS COMMANDS (Strict Code)
@@ -104,19 +114,32 @@ def think(text):
         return "Shubh Ratri Sakha. System band kar raha hoon."
 
     # =================================================================
-    # 🎵 PRIORITY 2: MEDIA (YouTube/Spotify)
+    # 🎵 PRIORITY 2: MEDIA (Smart "Play" Logic)
     # =================================================================
-    if "play" in text or "song" in text:
-        song = text.replace("play", "").replace("song", "").strip()
+    media_triggers = ["play", "plays", "playing", "song", "music", "sunao", "chalao"]
+    
+    if any(word in text for word in media_triggers):
+        # Remove trigger words to get the clean song name
+        song = text
+        for trigger in media_triggers:
+            song = song.replace(trigger, "")
+        
+        song = song.strip()
+        
         if "spotify" in text:
+            song = song.replace("spotify", "").strip()
             skills.open_any_app("spotify"); time.sleep(3)
             pyautogui.hotkey('ctrl', 'l'); pyautogui.write(song); pyautogui.press('enter')
             return "Spotify par chala raha hoon."
-        pywhatkit.playonyt(song)
-        return f"Playing {song}."
+        
+        if song: 
+            pywhatkit.playonyt(song)
+            return f"Playing {song} on YouTube."
+        else:
+            return "Kaunsa gaana chalaun, Sakha?"
 
     # =================================================================
-    # 🕉️ PRIORITY 3: DIVINE KNOWLEDGE (Strict Hindi/Sanskrit)
+    # 🕉️ PRIORITY 3: DIVINE KNOWLEDGE
     # =================================================================
     if "gita" in text or "geeta" in text or "chapter" in text:
         return get_gita_specific(text)
@@ -125,11 +148,9 @@ def think(text):
         return get_mantra(text)
 
     # =================================================================
-    # 🤖 PRIORITY 4: CHAT WITH KRISHNA / KANHA
+    # 🤖 PRIORITY 4: CHAT WITH NEEL MADHAV
     # =================================================================
-    
-    # We now just refer to the loaded brain as "Neel Madhav"
-    print("💬 Neel Madhav (Krishna/Kanha) Chatting...")
+    print("💬 Neel Madhav Chatting...")
     
     persona = (
         "You are Neel Madhav (Krishna). "
@@ -141,6 +162,7 @@ def think(text):
     return brain_loader.query(persona, text, mode="voice")
 
 def speak_stream(text):
+    # Try ElevenLabs first
     if client:
         try:
             audio = client.text_to_speech.convert(
@@ -156,5 +178,7 @@ def speak_stream(text):
             stream.stop_stream(); stream.close(); p.terminate()
             return 
         except: pass
+    
+    # Fallback to offline TTS
     try: engine.say(text); engine.runAndWait()
     except: pass
