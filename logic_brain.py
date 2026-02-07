@@ -16,7 +16,7 @@ import datetime
 import psutil    
 import wikipedia 
 import re 
-import os  # ✅ FIXED: Added missing import
+import os 
 
 # --- CONFIG ---
 try: 
@@ -79,22 +79,17 @@ def think(text):
     # =================================================================
     # 🚨 PRIORITY 1: SYSTEM & OS COMMANDS (Strict Code)
     # =================================================================
-    
-    # Check Time/Date/Battery
     sys_info = get_system_info(text)
     if sys_info: return sys_info
 
-    # App Control
     if "open" in text:
         app = text.replace("open", "").strip()
         skills.open_any_app(app)
         return f"Opening {app}."
 
-    # Window Control
     if "close window" in text: pyautogui.hotkey('alt', 'f4'); return "Closed."
     if "minimize" in text: pyautogui.hotkey('win', 'd'); return "Done."
     
-    # Shutdown
     if "shutdown" in text:
         os.system("shutdown /s /t 5")
         return "Shubh Ratri Sakha. System band kar raha hoon."
@@ -121,17 +116,15 @@ def think(text):
         return get_mantra(text)
 
     # =================================================================
-    # 🤖 PRIORITY 4: PHI-3 (ONLY FOR CASUAL TALK)
+    # 🤖 PRIORITY 4: CHAT WITH KRISHNA / KANHA
     # =================================================================
-    # If the code reached here, it means NO command was found.
-    # So, we let Phi-3 handle it as a conversation.
     
-    print("💬 Neel Madhav (Phi-3) Chatting...")
+    # We now just refer to the loaded brain as "Neel Madhav"
+    print("💬 Neel Madhav (Krishna/Kanha) Chatting...")
     
     persona = (
         "You are Neel Madhav (Krishna). "
         "You are a friendly companion. "
-        "You are NOT an assistant here, just a friend. "
         "Reply casually in Hinglish or Hindi. "
         "Keep it short."
     )
