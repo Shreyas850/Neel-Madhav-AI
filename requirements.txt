@@ -1,0 +1,44 @@
+# --- The Brain (Local GPU) ---
+llama-cpp-python
+huggingface_hub
+
+# --- Voice & Ears ---
+elevenlabs
+SpeechRecognition
+pyaudio
+pyttsx3
+pywhatkit
+
+# --- Connectivity & Tools ---
+requests
+beautifulsoup4
+google-api-python-client
+google-auth-oauthlib
+flask
+flask-cors
+mysql-connector-python
+google-generativeai
+google-genai
+lxml
+
+# --- System Control ---
+pyautogui
+keyboard
+screen_brightness_control
+pycaw
+comtypes
+psutil
+pycaw
+screen-brightness-control
+psutil
+pyperclip
+requests
+psutil
+wikipedia
+
+# --- GUI & Vision ---
+customtkinter
+pillow
+packaging
+opencv-python
+mediapipe

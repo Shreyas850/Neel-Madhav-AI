@@ -1,0 +1,13 @@
+# Ignore the Virtual Environment
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Ignore Heavy Model Files (Too big for GitHub)
+*.gguf
+*.bin
+*.pt
+
+# Ignore Sensitive Keys (VERY IMPORTANT)
+secrets.py
