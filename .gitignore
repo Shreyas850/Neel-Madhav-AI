@@ -9,5 +9,3 @@ __pycache__/
 *.bin
 *.pt
 
-# Ignore Sensitive Keys (VERY IMPORTANT)
-secrets.py
