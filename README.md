@@ -111,10 +111,56 @@ pip install llama-cpp-python --upgrade --force-reinstall --no-cache-dir
 
 Download the models and place them in the **root directory** of the project.
 
-| Model Name      | Links for models                                                           | Description                | Size    |
-| --------------- | -------------------------------------------------------------------------- | -------------------------- | ------- |
-| **Krishna**     | "https://huggingface.co/Khush2007/Neel-Madhav-Phi3/blob/main/krishna.gguf" | Deep reasoning, philosophy | ~2.4 GB |
-| **Kanha**       | "https://huggingface.co/Khush2007/Neel-Madhav-Phi3/blob/main/kanha.gguf"   | Fast commands, low memory  | ~1.1 GB |
+🔗 **Official model download page (both models):**
+[https://huggingface.co/Khush2007/Neel-MadhavPhi3/tree/main](https://huggingface.co/Khush2007/Neel-Madhav-Phi3/tree/main)
+
+| Model Name      | Identity | Description                | Size    |
+| --------------- | -------- | -------------------------- | ------- |
+| **Phi-3 Mini**  | Krishna  | Deep reasoning, philosophy | ~2.4 GB |
+| **Jarvis Lite** | Kanha    | Fast commands, low memory  | ~1.1 GB |
+
+### 📌 Rename the model files
+
+```text
+Phi-3 Mini  →  krishna.gguf
+Jarvis Lite →  kanha.gguf
+```
+
+---
+
+## 💻 Laptop / CPU-Only Mode
+
+If you are running **Neel Madhav AI on a laptop or CPU-only system** (no NVIDIA GPU), use the following settings to prevent crashes, reduce RAM usage, and ensure smooth operation.
+
+### 1️⃣ Update `brain_loader.py` (The Brain)
+
+Change the Llama initialization to lower memory usage and force CPU processing:
+
+```python
+# Laptop Friendly Configuration
+llm = Llama(
+    model_path=MODEL_PATH,
+    n_ctx=2048,          # Lower context to save RAM (Standard is 4096)
+    n_gpu_layers=0,      # 0 = Force CPU (Prevents GPU VRAM errors)
+    verbose=False
+)
+```
+
+### 2️⃣ Update `voice_core.py` (The Ears)
+
+Force Whisper to use the CPU and automatically fall back to a smaller model if required:
+
+```python
+# Force CPU for Whisper Ears
+try:
+    # 'base' model is a good balance for modern CPUs
+    audio_model = whisper.load_model("base", device="cpu") 
+    print("✅ Whisper Ears Active on CPU.")
+except:
+    # 'tiny' model is faster for older laptops
+    audio_model = whisper.load_model("tiny", device="cpu") 
+    print("⚠️ Fallback to Tiny model on CPU.")
+```
 
 ---
 
