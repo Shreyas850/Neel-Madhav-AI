@@ -111,17 +111,10 @@ pip install llama-cpp-python --upgrade --force-reinstall --no-cache-dir
 
 Download the models and place them in the **root directory** of the project.
 
-| Model Name      | Identity | Description                | Size    |
-| --------------- | -------- | -------------------------- | ------- |
-| **Phi‑3 Mini**  | Krishna  | Deep reasoning, philosophy | ~2.4 GB |
-| **Jarvis Lite** | Kanha    | Fast commands, low memory  | ~1.1 GB |
-
-### 📌 Rename the model files
-
-```text
-Phi‑3 Mini  →  krishna.gguf
-Jarvis Lite →  kanha.gguf
-```
+| Model Name      | Links for models                                                           | Description                | Size    |
+| --------------- | -------------------------------------------------------------------------- | -------------------------- | ------- |
+| **Krishna**     | "https://huggingface.co/Khush2007/Neel-Madhav-Phi3/blob/main/krishna.gguf" | Deep reasoning, philosophy | ~2.4 GB |
+| **Kanha**       | "https://huggingface.co/Khush2007/Neel-Madhav-Phi3/blob/main/kanha.gguf"   | Fast commands, low memory  | ~1.1 GB |
 
 ---
 
