@@ -3,14 +3,18 @@ from PIL import Image, ImageTk, ImageSequence
 import threading
 import os
 import sys
-import logic_brain
-import voice_core
+import time
+
+# --- DEBUG STARTUP ---
+print("🚀 [1/5] Launcher script started...")
+
+# Global variables for backend modules (Lazy Loaded)
+logic_brain = None
+voice_core = None
 
 # --- CONFIGURATION ---
-# Base path handles the emoji 🦚 correctly
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
-
 KRISHNA_PATH = os.path.join(STATIC_DIR, "krishna.jpg")
 ORB_PATH = os.path.join(STATIC_DIR, "orb.gif")
 
@@ -21,103 +25,127 @@ class NeelMadhavGUI:
         self.root.geometry("500x750")
         self.root.resizable(False, False)
 
-        # 1. Load Background (Krishna)
+        print("🎨 [2/5] Initializing GUI elements...")
+
+        # --- USE CANVAS FOR TRANSPARENCY (Fixes Black Boxes) ---
+        self.canvas = tk.Canvas(root, width=500, height=750, highlightthickness=0, bg='black')
+        self.canvas.pack(fill="both", expand=True)
+
+        # 1. Draw Background Image
         self.bg_image = self.load_image(KRISHNA_PATH, (500, 750))
-        self.bg_label = tk.Label(root, image=self.bg_image)
-        self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+        if self.bg_image:
+            self.canvas.create_image(0, 0, image=self.bg_image, anchor="nw")
+        else:
+            self.canvas.create_text(250, 375, text="Image Not Found", fill="white")
 
-        # 2. Load Orb (GIF Animation)
-        self.orb_frames = self.load_gif(ORB_PATH, (150, 149))
-        self.orb_label = tk.Label(root, bg="black", borderwidth=0)
-        # Place Orb at bottom center
-        self.orb_label.place(relx=0.5, rely=0.85, anchor="center")
-        
-        # Start Animation if frames exist
-        if self.orb_frames:
-            self.animate_orb(0)
-
-        # 3. Status Label
-        self.status_label = tk.Label(
-            root, 
-            text="Listening...", 
-            font=("Helvetica", 16, "bold"), 
-            fg="#00FF00",  # Green text
-            bg="black"
+        # 2. Draw Status Text (Above Orb, No Box)
+        # Position: x=250 (Center), y=580 (Above Orb)
+        self.status_text_id = self.canvas.create_text(
+            250, 580, 
+            text="Initializing Brain...", 
+            font=("Helvetica", 14, "bold"), # Sans-Serif Font
+            fill="cyan"
         )
-        self.status_label.place(relx=0.5, rely=0.05, anchor="center")
 
-        # 4. Start Voice Thread
-        self.start_thread()
+        # 3. Draw Orb (Bottom Center)
+        # Position: x=250 (Center), y=680 (Bottom)
+        self.orb_frames = self.load_gif(ORB_PATH, (150, 149))
+        self.current_frame_idx = 0
+        
+        # Placeholder for orb on canvas
+        self.orb_image_id = self.canvas.create_image(250, 680, anchor="center")
+        
+        if self.orb_frames:
+            self.animate_orb()
+
+        # 4. Schedule Backend Loading
+        print("⏳ [3/5] Scheduling backend load...")
+        self.root.after(1000, self.start_backend_thread)
 
     def load_image(self, path, size):
-        """Loads a static image safely."""
         try:
             img = Image.open(path)
             img = img.resize(size, Image.Resampling.LANCZOS)
             return ImageTk.PhotoImage(img)
         except Exception as e:
-            print(f"❌ Error loading {path}: {e}")
+            print(f"❌ Error loading image {path}: {e}")
             return None
 
     def load_gif(self, path, size):
-        """Loads all frames of a GIF for animation."""
         frames = []
         try:
             gif = Image.open(path)
+            # Iterator allows reading all frames of GIF
             for frame in ImageSequence.Iterator(gif):
+                frame = frame.convert("RGBA") # Use RGBA for transparency
                 frame = frame.resize(size, Image.Resampling.LANCZOS)
                 frames.append(ImageTk.PhotoImage(frame))
             return frames
         except Exception as e:
-            print(f"⚠️ Orb GIF not found or error: {e}")
+            print(f"⚠️ Orb GIF error: {e}")
             return []
 
-    def animate_orb(self, index):
-        """Loops through GIF frames."""
-        frame = self.orb_frames[index]
-        self.orb_label.configure(image=frame)
-        # 1000ms / 30fps = ~33ms delay
-        self.root.after(33, self.animate_orb, (index + 1) % len(self.orb_frames))
+    def animate_orb(self):
+        if not self.orb_frames: return
+        
+        # Update the image item on the canvas
+        frame = self.orb_frames[self.current_frame_idx]
+        self.canvas.itemconfig(self.orb_image_id, image=frame)
+        
+        self.current_frame_idx = (self.current_frame_idx + 1) % len(self.orb_frames)
+        self.root.after(33, self.animate_orb)
 
     def update_status(self, text, color):
-        """Updates the text label (Thread Safe)."""
-        self.status_label.config(text=text, fg=color)
+        # Update the text item on the canvas
+        self.canvas.itemconfig(self.status_text_id, text=text, fill=color)
+
+    # --- BACKEND HANDLING ---
+    def start_backend_thread(self):
+        thread = threading.Thread(target=self.load_and_run_ai, daemon=True)
+        thread.start()
+
+    def load_and_run_ai(self):
+        global logic_brain, voice_core
+        try:
+            print("🧠 [4/5] Importing AI Modules...")
+            import logic_brain
+            import voice_core
+            print("✅ [5/5] AI Modules Loaded!")
+
+            # Update Text to "Listening"
+            self.root.after(0, lambda: self.update_status("Listening...", "#FFFFFF")) # White
+            
+            logic_brain.speak_stream("Radhey Radhey")
+            voice_core.listen_loop(self.main_execution)
+
+        except Exception as e:
+            print(f"❌ CRITICAL ERROR: {e}")
+            self.root.after(0, lambda: self.update_status("System Error", "red"))
 
     def main_execution(self, text):
-        """Callback when voice is heard."""
         if not text: return
-
-        # 1. Change Status to SLEEPING (Busy)
-        self.update_status("Sleeping (Thinking...)", "cyan")
-        self.root.update_idletasks() # Force UI update immediately
-
-        # 2. Process & Speak
+        
+        # Update UI to Thinking
+        self.root.after(0, lambda: self.update_status("Thinking...", "cyan"))
+        
+        # Logic
         response = logic_brain.think(text)
+        
+        # Speak
         if response:
             print(f"🤖 Reply: {response}")
             logic_brain.speak_stream(response)
         
-        # 3. Change Status back to LISTENING
-        self.update_status("Listening.....!", "#FFFFFF")
+        # Reset UI
+        self.root.after(0, lambda: self.update_status("Listening...", "#FFFFFF"))
 
-    def start_thread(self):
-        thread = threading.Thread(target=self.run_voice, daemon=True)
-        thread.start()
-
-    def run_voice(self):
-        try:
-            voice_core.listen_loop(self.main_execution)
-        except Exception as e:
-            print(f"Error: {e}")
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    # Optional: Black background for the window itself
-    root.configure(bg='black')
-    
-    app = NeelMadhavGUI(root)
-    
-    # Intro Sound
-    logic_brain.speak_stream("Radhey Radhey")
-    
-    root.mainloop()
+    try:
+        root = tk.Tk()
+        app = NeelMadhavGUI(root)
+        print("🖥️ GUI Loop Starting...")
+        root.mainloop()
+    except Exception as e:
+        print(f"❌ LAUNCHER CRASHED: {e}")
+        input("Press Enter...")
