@@ -1,6 +1,8 @@
 # --- The Brain (Local GPU) ---
 llama-cpp-python
 huggingface_hub
+torch
+numpy<2.0
 
 # --- Voice & Ears ---
 elevenlabs
@@ -8,6 +10,7 @@ SpeechRecognition
 pyaudio
 pyttsx3
 pywhatkit
+openai-whisper
 
 # --- Connectivity & Tools ---
 requests
@@ -20,9 +23,6 @@ mysql-connector-python
 google-generativeai
 google-genai
 lxml
-openai-whisper
-torch
-numpy
 
 # --- System Control ---
 pyautogui
@@ -31,17 +31,13 @@ screen_brightness_control
 pycaw
 comtypes
 psutil
-pycaw
-screen-brightness-control
-psutil
 pyperclip
-requests
-psutil
 wikipedia
 
 # --- GUI & Vision ---
 customtkinter
 pillow
 packaging
-opencv-python
+# OpenCV must be <4.10 to work with Numpy <2.0
+opencv-python<4.10
 mediapipe

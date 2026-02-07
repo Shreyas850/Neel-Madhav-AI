@@ -3,7 +3,7 @@ import os
 import sys
 
 # ✅ MODEL CONFIGURATION
-MODEL_PATH = "Phi-3-mini-4k-instruct-q4.gguf"
+MODEL_PATH = "kanha.gguf"
 
 print("\n🔄 CONNECTING TO GPU (CUDA)...")
 
