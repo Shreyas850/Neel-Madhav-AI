@@ -111,7 +111,7 @@ class NeelMadhavGUI:
             print("✅ [5/5] All Modules Loaded!")
 
             # STEP 3: READY
-            self.root.after(0, lambda: self.update_status("Listening...", "#00FF00"))
+            self.root.after(0, lambda: self.update_status("Listening...", "#FFFFFF"))
             
             logic_brain.speak_stream("Radhey Radhey")
             voice_core.listen_loop(self.main_execution)
@@ -131,7 +131,7 @@ class NeelMadhavGUI:
             print(f"🤖 Reply: {response}")
             logic_brain.speak_stream(response)
         
-        self.root.after(0, lambda: self.update_status("Listening...", "#00FF00"))
+        self.root.after(0, lambda: self.update_status("Listening...", "#FFFFFF"))
 
 
 if __name__ == "__main__":
