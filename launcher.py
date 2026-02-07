@@ -98,7 +98,7 @@ class NeelMadhavGUI:
             logic_brain.speak_stream(response)
         
         # 3. Change Status back to LISTENING
-        self.update_status("Listening...", "#00FF00")
+        self.update_status("Listening.....!", "#FFFFFF")
 
     def start_thread(self):
         thread = threading.Thread(target=self.run_voice, daemon=True)
