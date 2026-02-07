@@ -23,6 +23,9 @@ mysql-connector-python
 google-generativeai
 google-genai
 lxml
+torch
+torchvision
+torchaudio
 
 # --- System Control ---
 pyautogui

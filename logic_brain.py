@@ -39,9 +39,11 @@ def get_gita_specific(text):
     try:
         numbers = re.findall(r'\d+', text)
         if len(numbers) >= 2:
-            ch = int(numbers[0]); sl = int(numbers[1])
+            ch = int(numbers[0])
+            sl = int(numbers[1])
         else:
-            ch = random.randint(1, 18); sl = random.randint(1, 20)
+            ch = random.randint(1, 18)
+            sl = random.randint(1, 20)
 
         url = f"https://vedicscriptures.github.io/slok/{ch}/{sl}"
         response = requests.get(url, timeout=3)
@@ -51,7 +53,14 @@ def get_gita_specific(text):
             sanskrit = data.get('slok', '').replace("\n", " ")
             hindi_meaning = data.get('tej', {}).get('ht', 'अर्थ उपलब्ध नहीं है।')
             return f"अध्याय {ch}, श्लोक {sl}: {sanskrit} ... अर्थ: {hindi_meaning}"
-    except: pass
+        else:
+            # ✅ NEW: Specific error for missing verses
+            return f"Kshama karein Sakha, Adhyay {ch} mein Shlok {sl} nahi hai."
+
+    except Exception as e:
+        print(f"Gita API Error: {e}") # Print real error to terminal for debugging
+        pass
+    
     return "Internet connection error, Sakha."
 
 # --- 🕉️ MANTRA DATABASE ---
