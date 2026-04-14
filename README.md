@@ -112,7 +112,7 @@ pip install llama-cpp-python --upgrade --force-reinstall --no-cache-dir
 Download the models and place them in the **root directory of the project**.
 
 🔗 **Official model download page (both models)**  
-https://huggingface.co/Khush2007/Neel-MadhavPhi3/tree/main
+[https://huggingface.co/Khush2007/Neel-MadhavPhi3/tree/main](https://huggingface.co/Khush2007/Neel-Madhav-Phi3)
 
 | Model Name | Identity | Description | Size |
 |------------|----------|-------------|------|
