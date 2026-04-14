@@ -2,7 +2,7 @@ from llama_cpp import Llama
 import os
 
 # --- CONFIGURATION (SPEED FOCUSED) ---
-MODEL_PATH = "D:/DEV/Neel Madhav🦚/kanha.gguf"
+MODEL_PATH = "D:/DEV/Neel-Madhav-AI/kanha.gguf"
 
 print("🧠 Loading Brain into VRAM (GPU Only)...")
 
